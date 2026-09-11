@@ -1,11 +1,13 @@
 import { useState } from "react";
 import Panel from "../components/Panel";
+import { translations, type Language } from "../../i18n";
 
 type ModbusProps = {
   notify: (message: string) => void;
+  language: Language;
 };
 
-export default function Modbus({ notify }: ModbusProps) {
+export default function Modbus({ notify, language }: ModbusProps) {
   const [connection, setConnection] = useState({
     host: "192.168.1.10",
     port: "502",
@@ -13,19 +15,23 @@ export default function Modbus({ notify }: ModbusProps) {
     poll: "1000",
   });
   const [connectionSaved, setConnectionSaved] = useState(false);
+  const copy = translations[language].modbus;
   return (
     <div className="connection-grid">
-      <Panel title="设备连接" extra={<span className="badge">未连接</span>}>
+      <Panel
+        title={copy.title}
+        extra={<span className="badge">{copy.disconnected}</span>}
+      >
         <form
           onSubmit={(e) => {
             e.preventDefault();
             setConnectionSaved(true);
-            notify("配置已暂存，设备未连接");
+            notify(copy.savedToast);
           }}
         >
           <div className="form-grid">
             <label className="field">
-              <span>设备 IP / 主机名</span>
+              <span>{copy.host}</span>
               <input
                 required
                 value={connection.host}
@@ -37,11 +43,11 @@ export default function Modbus({ notify }: ModbusProps) {
               />
             </label>
             {[
-              { key: "port", label: "端口", min: 1, max: 65535 },
-              { key: "unit", label: "设备编号", min: 0, max: 255 },
+              { key: "port", label: copy.port, min: 1, max: 65535 },
+              { key: "unit", label: copy.unit, min: 0, max: 255 },
               {
                 key: "poll",
-                label: "更新间隔 (ms)",
+                label: copy.poll,
                 min: 100,
                 max: 60000,
               },
@@ -67,11 +73,9 @@ export default function Modbus({ notify }: ModbusProps) {
             ))}
           </div>
           <div className="form-actions">
-            <span>
-              {connectionSaved ? "配置已暂存" : "演示模式，设备未连接"}
-            </span>
+            <span>{connectionSaved ? copy.saved : copy.demoStatus}</span>
             <button type="submit" className="button primary">
-              保存配置
+              {copy.save}
             </button>
           </div>
         </form>

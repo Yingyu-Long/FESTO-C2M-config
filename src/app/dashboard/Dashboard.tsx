@@ -4,21 +4,14 @@ import type { DeviceController } from "./useDevice";
 import { fields } from "../config/fields";
 import Icon from "../components/Icon";
 import Panel from "../components/Panel";
-
-const phaseNames = {
-  NORMAL: "正常供气",
-  WAIT: "低流量计时",
-  HOLD: "等待开启自动待机",
-  SHUTOFF: "切断降压",
-  STANDBY: "待机保压",
-  RISE: "恢复压力",
-};
+import { translations, type Language } from "../../i18n";
 
 type DashboardProps = {
   params: Parameters;
   device: DeviceController;
   onOpenConfig: () => void;
   notify: (message: string) => void;
+  language: Language;
 };
 
 export default function Dashboard({
@@ -26,6 +19,7 @@ export default function Dashboard({
   device,
   onOpenConfig,
   notify,
+  language,
 }: DashboardProps) {
   const {
     mode,
@@ -43,6 +37,8 @@ export default function Dashboard({
     resetTimer,
   } = device;
   const current = samples[samples.length - 1];
+  const copy = translations[language].dashboard;
+  const phaseNames = copy.phase;
   const [metric, setMetric] = useState<"flow" | "pressure">("flow");
   const [resetOpen, setResetOpen] = useState(false);
   const cancelRef = useRef<HTMLButtonElement>(null);
@@ -70,36 +66,36 @@ export default function Dashboard({
         <div className="metrics">
           {[
             {
-              label: "当前流量",
+              label: copy.currentFlow,
               value: current.flow.toFixed(1),
               unit: "l/min",
               icon: "flow",
-              detail: `低流量阈值 ${params.threshold} l/min`,
+              detail: `${copy.lowFlowThreshold} ${params.threshold} l/min`,
             },
             {
-              label: "输出压力",
+              label: copy.outputPressure,
               value: current.pressure.toFixed(2),
               unit: "bar",
               icon: "pressure",
-              detail: `目标压力 ${mode === "user" ? params.userPressure : ["SHUTOFF", "STANDBY"].includes(current.phase) ? params.standby : params.normal} bar`,
+              detail: `${copy.targetPressure} ${mode === "user" ? params.userPressure : ["SHUTOFF", "STANDBY"].includes(current.phase) ? params.standby : params.normal} bar`,
             },
             {
-              label: "累计耗气量",
+              label: copy.totalConsumption,
               value: current.consumption.toFixed(3),
               unit: "m³",
               icon: "total",
-              detail: "本次累计",
+              detail: copy.sessionTotal,
             },
             {
-              label: "压力变化",
+              label: copy.pressureChange,
               value: `${current.delta > 0 ? "+" : ""}${current.delta.toFixed(2)}`,
               unit: "bar/s",
               icon: "trend",
               detail: leak
-                ? "压降异常，请检查"
+                ? copy.leakWarning
                 : leakEligible
-                  ? "压降监测中"
-                  : "切断后可评估泄漏",
+                  ? copy.leakMonitoring
+                  : copy.leakAssessment,
             },
           ].map((m) => (
             <section className="metric-card" key={m.label}>
@@ -118,38 +114,42 @@ export default function Dashboard({
           ))}
         </div>
         <div className="primary-grid">
-          <Panel title="运行控制">
+          <Panel title={copy.operationControl}>
             <div className="control-body">
               <div className="label-row">
-                <span>控制模式</span>
+                <span>{copy.controlMode}</span>
               </div>
-              <div className="mode-switch" role="group" aria-label="控制模式">
+              <div
+                className="mode-switch"
+                role="group"
+                aria-label={copy.controlMode}
+              >
                 <button
                   className={mode === "auto" ? "selected" : ""}
                   onClick={() => changeMode("auto")}
                 >
                   <Icon name="settings" />
-                  自动模式
+                  {copy.autoMode}
                 </button>
                 <button
                   className={mode === "user" ? "selected" : ""}
                   onClick={() => changeMode("user")}
                 >
                   <Icon name="plug" />
-                  手动模式
+                  {copy.manualMode}
                 </button>
               </div>
               {mode === "auto" ? (
                 <>
                   <div className="setting-row">
                     <div>
-                      <strong>自动待机</strong>
+                      <strong>{copy.autoStandby}</strong>
                     </div>
                     <button
                       className={`switch ${enabled ? "on" : ""}`}
                       role="switch"
                       aria-checked={enabled}
-                      aria-label="自动待机"
+                      aria-label={copy.autoStandby}
                       onClick={() => setEnabled(!enabled)}
                     >
                       <span />
@@ -157,7 +157,7 @@ export default function Dashboard({
                   </div>
                   <div className="timer">
                     <div className="label-row">
-                      <span>低流量计时</span>
+                      <span>{copy.lowFlowTimer}</span>
                       <strong>
                         {Math.floor(current.elapsed / 60)}:
                         {String(current.elapsed % 60).padStart(2, "0")}{" "}
@@ -175,7 +175,7 @@ export default function Dashboard({
                       <span>{phaseNames[current.phase]}</span>
                       <button className="text-button" onClick={resetTimer}>
                         <Icon name="reset" size={14} />
-                        恢复供气 / 重新计时
+                        {copy.restoreAndRet}
                       </button>
                     </div>
                   </div>
@@ -184,58 +184,60 @@ export default function Dashboard({
                 <>
                   <div className="setting-row">
                     <div>
-                      <strong>截止阀控制</strong>
+                      <strong>{copy.shutoffValve}</strong>
                     </div>
                     <div className="segmented">
                       <button
                         className={manualOpen ? "selected" : ""}
                         onClick={() => setManualOpen(true)}
                       >
-                        供气
+                        {copy.open}
                       </button>
                       <button
                         className={!manualOpen ? "selected" : ""}
                         onClick={() => setManualOpen(false)}
                       >
-                        切断
+                        {copy.closed}
                       </button>
                     </div>
                   </div>
                   <div className="manual-pressure">
                     <span>
-                      手动目标压力{" "}
+                      {copy.manualTargetPressure}{" "}
                       <strong>{params.userPressure.toFixed(1)} bar</strong>
                     </span>
                     <button
                       className="text-button"
                       onClick={() => onOpenConfig()}
                     >
-                      调整压力 <Icon name="arrow" size={14} />
+                      {copy.adjustPressure} <Icon name="arrow" size={14} />
                     </button>
                   </div>
                 </>
               )}
               <div className="control-status">
                 <span className={`dot ${valveOpen ? "" : "muted"}`} />
-                <strong>截止阀{valveOpen ? "已打开" : "已关闭"}</strong>
+                <strong>
+                  {copy.shutoffValve} {valveOpen ? copy.open : copy.closed}
+                </strong>
               </div>
             </div>
           </Panel>
           <Panel
-            title="实时趋势"
+            title={copy.liveTrend}
             extra={
               <div className="segmented">
                 <button
                   className={metric === "flow" ? "selected" : ""}
                   onClick={() => setMetric("flow")}
                 >
-                  流量
+                  {copy.flow}
                 </button>
                 <button
                   className={metric === "pressure" ? "selected" : ""}
                   onClick={() => setMetric("pressure")}
                 >
-                  压力
+                  {copy.pressure}
                 </button>
               </div>
             }
@@ -243,15 +245,15 @@ export default function Dashboard({
             <div className="chart-meta">
               <span>
                 <i className="legend-line" />
-                {metric === "flow" ? "当前流量 (l/min)" : "输出压力 (bar)"}
+                {metric === "flow" ? copy.flowTrend : copy.pressureTrend}
               </span>
-              <span>最近 60 秒</span>
+              <span>{copy.recentSeconds}</span>
             </div>
             <div className="chart">
               <svg
                 viewBox="0 0 770 194"
                 role="img"
-                aria-label={`${metric === "flow" ? "流量" : "压力"}最近60个采样点趋势`}
+                aria-label={`${metric === "flow" ? copy.flow : copy.pressure}${copy.trendAria}`}
               >
                 <defs>
                   <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
@@ -306,10 +308,10 @@ export default function Dashboard({
               </svg>
             </div>
             <div className="chart-footer">
-              <span>{running ? "" : "更新已暂停"}</span>
+              <span>{running ? "" : copy.updatesPaused}</span>
               <span>
                 {metric === "flow"
-                  ? `虚线：阈值 ${params.threshold} l/min`
+                  ? `${copy.threshold} ${params.threshold} l/min`
                   : ""}
               </span>
             </div>
@@ -317,18 +319,18 @@ export default function Dashboard({
         </div>
         <div className="secondary-grid">
           <Panel
-            title="自动控制参数"
+            title={copy.automaticParameters}
             extra={
               <button className="text-button" onClick={() => onOpenConfig()}>
                 <Icon name="settings" size={16} />
-                编辑参数
+                {copy.editParameters}
               </button>
             }
           >
             <div className="parameter-summary">
               {fields.slice(0, 4).map((f) => (
                 <div key={f.key}>
-                  <span>{f.title}</span>
+                  <span>{language === "en" ? f.titleEn : f.title}</span>
                   <strong>
                     {params[f.key]} <small>{f.unit}</small>
                   </strong>
@@ -336,14 +338,16 @@ export default function Dashboard({
               ))}
             </div>
           </Panel>
-          <Panel title="耗气量管理">
+          <Panel title={copy.consumptionManagement}>
             <div className="consumption-body">
               <div>
-                <span>累计用气成本</span>
+                <span>{copy.consumptionCost}</span>
                 <strong>
                   ¥ {(current.consumption * params.price).toFixed(2)}
                 </strong>
-                <small>按 ¥ {params.price.toFixed(2)} / m³ 估算</small>
+                <small>
+                  {copy.estimatedAt} ¥ {params.price.toFixed(2)} / m³
+                </small>
               </div>
               <button
                 ref={resetTrigger}
@@ -351,33 +355,33 @@ export default function Dashboard({
                 onClick={() => setResetOpen(true)}
               >
                 <Icon name="reset" size={16} />
-                重置耗气量
+                {copy.resetConsumption}
               </button>
             </div>
           </Panel>
         </div>
         <details className="demo-controls">
-          <summary>演示控制</summary>
+          <summary>{copy.demoControls}</summary>
           <div className="demo-controls-body">
             <div className="segmented">
               <button
                 className={!idle ? "selected" : ""}
                 onClick={() => setIdle(false)}
               >
-                设备运行
+                {copy.deviceRunning}
               </button>
               <button
                 className={idle ? "selected" : ""}
                 onClick={() => setIdle(true)}
               >
-                设备停机
+                {copy.deviceStopped}
               </button>
             </div>
             <button
               className="text-button"
               onClick={() => setRunning(!running)}
             >
-              {running ? "暂停演示" : "继续演示"}
+              {running ? copy.pauseDemo : copy.resumeDemo}
             </button>
           </div>
         </details>
@@ -405,25 +409,25 @@ export default function Dashboard({
             <div className="modal-icon">
               <Icon name="reset" size={26} />
             </div>
-            <h2 id="reset-title">重置累计耗气量？</h2>
+            <h2 id="reset-title">{copy.resetTitle}</h2>
             <p>
-              当前累计耗气量为{" "}
+              {copy.resetMessage}{" "}
               <strong>{current.consumption.toFixed(3)} m³</strong>
-              。重置后耗气量与成本归零。
+              {copy.resetMessageEnd}
             </p>
             <div className="modal-actions">
               <button ref={cancelRef} className="button" onClick={closeReset}>
-                取消
+                {copy.cancel}
               </button>
               <button
                 className="button primary"
                 onClick={() => {
                   updateCurrent({ consumption: 0 });
                   closeReset();
-                  notify("累计耗气量已重置");
+                  notify(copy.resetDone);
                 }}
               >
-                确认重置
+                {copy.confirmReset}
               </button>
             </div>
           </section>

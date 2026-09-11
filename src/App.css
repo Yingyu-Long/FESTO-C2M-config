@@ -13,6 +13,10 @@
   gap: 13px;
   font-size: 16px;
   white-space: nowrap;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
 }
 .product img {
   width: 27px;
@@ -27,25 +31,56 @@
   width: 132px;
   height: 28px;
   object-fit: contain;
+}
+.language-select {
+  position: relative;
+  flex-shrink: 0;
   margin-left: auto;
+}
+.language-select select {
+  min-width: 102px;
+  padding: 7px 28px 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: #fff;
+  color: #535b62;
+  font-size: 12px;
+  cursor: pointer;
+}
+.language-select select:hover {
+  border-color: var(--blue);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .topbar nav {
   display: flex;
   height: 100%;
   gap: 30px;
 }
-.topbar nav button {
+.topbar nav a {
   border: 0;
   background: none;
   position: relative;
   padding: 0 2px;
   font-size: 14px;
   color: #535b62;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
-.topbar nav button.active {
+.topbar nav a.active {
   color: var(--blue);
 }
-.topbar nav button.active:after {
+.topbar nav a.active:after {
   content: "";
   position: absolute;
   bottom: 0;
@@ -590,6 +625,24 @@ footer {
   padding: 24px 0 18px;
   font-size: 10px;
   color: #9ca6ad;
+}
+@media (max-width: 760px) {
+  .topbar {
+    gap: 16px;
+    padding: 0 16px;
+  }
+  .brand {
+    width: 100px;
+  }
+  .topbar nav {
+    gap: 14px;
+  }
+  .topbar nav a {
+    font-size: 12px;
+  }
+  .language-select select {
+    min-width: 88px;
+  }
 }
 .form-intro {
   padding: 24px 24px 0;

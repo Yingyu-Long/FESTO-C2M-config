@@ -1,4 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  Navigate,
+  NavLink,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 import { defaults } from "./simulation";
 import type { Parameters } from "./simulation";
 import Dashboard from "./app/dashboard/Dashboard";
@@ -7,13 +14,24 @@ import Config from "./app/config/Config";
 import Modbus from "./app/Modbus/Modbus";
 import Icon from "./app/components/Icon";
 import logo from "./assets/festo-logo.png";
+import { translations, type Language } from "./i18n";
 import "./App.css";
 
+const LANGUAGE_STORAGE_KEY = "festo-c2m-language";
+
 export default function App() {
-  const [tab, setTab] = useState("overview");
+  const [language, setLanguage] = useState<Language>(() => {
+    const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    return storedLanguage === "zh" ? "zh" : "en";
+  });
   const [params, setParams] = useState<Parameters>(defaults);
   const [toast, setToast] = useState("");
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  useEffect(() => {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  }, [language]);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
   function notify(message: string) {
     setToast(message);
@@ -21,60 +39,96 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast(""), 4000);
   }
 
-  const device = useDevice(params, notify);
+  const copy = translations[language];
+  const device = useDevice(params, notify, language);
+  const navigate = useNavigate();
   return (
     <div className="app">
       <header className="topbar">
-        <div className="product">
+        <button
+          className="product"
+          onClick={() => navigate("/overview")}
+          aria-label={copy.nav.overview}
+          title={copy.nav.overview}
+        >
           <img src="/dashboard.png" alt="" />
-          <span>Energy Efficiency</span>
-        </div>
-        <nav aria-label="主导航">
+        </button>
+        <nav aria-label={copy.nav.label}>
           {[
-            ["overview", "设备概览"],
-            ["parameters", "参数设置"],
-            ["connection", "设备连接"],
-          ].map(([key, label]) => (
-            <button
-              key={key}
-              className={tab === key ? "active" : ""}
-              onClick={() => setTab(key)}
+            ["/overview", copy.nav.overview],
+            ["/parameters", copy.nav.parameters],
+            ["/connection", copy.nav.connection],
+          ].map(([path, label]) => (
+            <NavLink
+              key={path}
+              to={path}
+              className={({ isActive }) => (isActive ? "active" : "")}
             >
               {label}
-            </button>
+            </NavLink>
           ))}
         </nav>
+        <label className="language-select">
+          <span className="sr-only">{copy.app.language}</span>
+          <select
+            value={language}
+            onChange={(event) => setLanguage(event.target.value as Language)}
+            aria-label={copy.app.language}
+          >
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+          </select>
+        </label>
         <img className="brand" src={logo} alt="Festo" />
       </header>
       <main>
         <div className="page-heading">
           <div>
             <h1>
-              MSE6-C2M <span>节能模块</span>
+              MSE6-C2M <span>{copy.app.module}</span>
             </h1>
           </div>
           <div className="heading-actions">
             <span className="badge demo">
               <i />
-              模拟演示
+              {copy.app.demo}
             </span>
-
           </div>
         </div>
 
-        {/* Keep page-local drafts and selections when switching tabs. */}
-        <div hidden={tab !== "overview"}>
-          <Dashboard params={params} device={device} onOpenConfig={() => setTab("parameters")} notify={notify} />
-        </div>
-        <div hidden={tab !== "parameters"}>
-          <Config params={params} onApply={setParams} notify={notify} />
-        </div>
-        <div hidden={tab !== "connection"}>
-          <Modbus notify={notify} />
-        </div>
+        <Routes>
+          <Route
+            path="/overview"
+            element={
+              <Dashboard
+                params={params}
+                device={device}
+                onOpenConfig={() => navigate("/parameters")}
+                notify={notify}
+                language={language}
+              />
+            }
+          />
+          <Route
+            path="/parameters"
+            element={
+              <Config
+                params={params}
+                onApply={setParams}
+                notify={notify}
+                language={language}
+              />
+            }
+          />
+          <Route
+            path="/connection"
+            element={<Modbus notify={notify} language={language} />}
+          />
+          <Route path="*" element={<Navigate to="/overview" replace />} />
+        </Routes>
         <footer>
           <span>FESTO · MSE6-C2M</span>
-          <span>演示数据 · 未连接设备</span>
+          <span>{copy.app.demoData}</span>
         </footer>
       </main>
       {toast && (
