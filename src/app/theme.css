@@ -1,0 +1,405 @@
+/* Shared visual language with the Smartenance repair-task export project. */
+:root {
+  --blue: #0076bd;
+  --border: #dbe3eb;
+  --muted: #586b7e;
+  --surface: #ffffff;
+  --surface-muted: #f3f6f9;
+  --ink: #182b40;
+  --input-border: #ccd7e1;
+  font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  color: var(--ink);
+  background: var(--surface-muted);
+}
+.app {
+  min-height: 100vh;
+  border-top: 4px solid var(--blue);
+}
+.topbar {
+  height: 76px;
+  gap: 28px;
+  padding: 0 max(28px, calc((100vw - 1200px) / 2 + 28px));
+  background: var(--surface);
+}
+.product img {
+  width: 34px;
+  height: 34px;
+}
+.topbar nav {
+  align-items: center;
+  gap: 6px;
+}
+.topbar nav a {
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: #587086;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.topbar nav a:hover,
+.topbar nav a.active {
+  color: #006aa9;
+  background: #e9f2f8;
+}
+.topbar nav a.active {
+  font-weight: 700;
+}
+.topbar nav a.active::after {
+  content: none;
+}
+.brand {
+  width: 132px;
+  height: auto;
+  flex-shrink: 0;
+}
+.language-select select {
+  min-width: 92px;
+  padding: 8px 10px;
+  border-color: var(--border);
+  border-radius: 6px;
+  color: #17374e;
+  font-size: 13px;
+}
+main {
+  max-width: 1200px;
+  padding: 34px 28px 20px;
+}
+.page-heading {
+  margin: 0 0 26px;
+  gap: 20px;
+}
+h1 {
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.7px;
+  color: var(--ink);
+}
+h1 span {
+  font-size: 20px;
+  letter-spacing: 0;
+  color: #587086;
+}
+.badge {
+  border: 0;
+  border-radius: 5px;
+  color: #617083;
+  background: #eef2f6;
+  font-size: 12px;
+  padding: 5px 9px;
+}
+.badge.demo {
+  border: 0;
+  background: #e9f4fb;
+  color: #0076bd;
+}
+.badge.demo i {
+  background: #0076bd;
+}
+.metrics,
+.primary-grid,
+.secondary-grid {
+  gap: 18px;
+  margin-bottom: 20px;
+}
+.primary-grid {
+  grid-template-columns: minmax(350px, 1fr) minmax(0, 1.5fr);
+}
+.secondary-grid {
+  grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr);
+}
+.metric-card,
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: none;
+}
+.metric-card {
+  padding: 20px;
+}
+.metric-label {
+  font-size: 14px;
+  color: #476276;
+}
+.metric-label svg {
+  color: #477085;
+}
+.metric-value {
+  color: var(--ink);
+  font-size: 32px;
+  margin: 20px 0 14px;
+  letter-spacing: -0.6px;
+}
+.metric-value > span {
+  color: #6b7d8b;
+  font-size: 13px;
+}
+.metric-bottom {
+  color: #6b7d8b;
+  font-size: 12px;
+  min-height: 20px;
+}
+.panel-heading {
+  height: 62px;
+  padding: 0 24px;
+  border-bottom: 1px solid #e8edf2;
+}
+.panel-heading h2 {
+  font-size: 17px;
+  font-weight: 650;
+  color: var(--ink);
+}
+.control-body {
+  padding: 22px 24px 0;
+}
+.label-row,
+.setting-row strong,
+.manual-pressure,
+.field > span {
+  font-size: 14px;
+  color: #324e64;
+}
+.mode-switch {
+  padding: 4px;
+  gap: 4px;
+  border-radius: 7px;
+  background: #edf3f7;
+  margin-bottom: 24px;
+}
+.mode-switch button,
+.mode-switch button + button,
+.mode-switch button.selected {
+  border: 0;
+  border-radius: 5px;
+  min-height: 38px;
+  padding: 8px;
+  background: transparent;
+  color: #61788a;
+  font-size: 14px;
+}
+.mode-switch button.selected {
+  background: #fff;
+  color: #006aa9;
+  box-shadow: 0 1px 3px rgb(24 43 64 / 9%);
+}
+.button {
+  min-height: 40px;
+  padding: 9px 16px;
+  font-size: 14px;
+  border-color: var(--input-border);
+  border-radius: 6px;
+  color: #324e64;
+}
+.button:hover {
+  background: #edf6fc;
+  border-color: #86b9d8;
+}
+.button.primary {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.button.primary:hover {
+  background: #006aa9;
+}
+.text-button {
+  font-size: 13px;
+  color: var(--blue);
+}
+.segmented {
+  padding: 3px;
+  background: #edf3f7;
+  border: 0;
+  border-radius: 6px;
+}
+.segmented button {
+  min-height: 32px;
+  border-radius: 4px;
+  background: transparent;
+  padding: 6px 12px;
+  color: #61788a;
+  font-size: 13px;
+}
+.segmented button.selected {
+  background: #fff;
+  color: #006aa9;
+  box-shadow: 0 1px 3px rgb(24 43 64 / 8%);
+}
+.chart-meta,
+.chart-footer,
+.timer-foot {
+  color: #6b7d8b;
+  font-size: 12px;
+}
+.chart svg {
+  height: auto;
+  min-height: 180px;
+}
+.chart text {
+  fill: #718497;
+}
+.parameter-summary {
+  padding: 24px 0;
+}
+.parameter-summary span,
+.consumption-body span {
+  font-size: 13px;
+  color: #536e82;
+}
+.parameter-summary strong,
+.consumption-body strong {
+  font-size: 26px;
+  color: var(--ink);
+}
+.parameter-summary small,
+.consumption-body small {
+  font-size: 12px;
+  color: #718497;
+}
+.consumption-body {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 24px;
+}
+.field {
+  gap: 9px;
+}
+.field input {
+  height: 44px;
+  font-size: 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  color: var(--ink);
+}
+.field input:hover {
+  border-color: #98b8cc;
+}
+.input-unit > span {
+  top: 14px;
+  font-size: 13px;
+}
+.field small,
+.form-actions > span {
+  color: #718497;
+  font-size: 12px;
+}
+.form-grid {
+  padding: 24px;
+  gap: 22px 28px;
+}
+.form-actions {
+  border-color: var(--border);
+  background: #f6f9fb;
+  border-radius: 0 0 10px 10px;
+}
+.connection-grid {
+  max-width: none;
+}
+.connection-grid > .panel {
+  border-left: 3px solid var(--blue);
+}
+.demo-controls {
+  margin-top: 4px;
+  color: #61788a;
+  font-size: 12px;
+}
+footer {
+  color: #758492;
+  font-size: 12px;
+  padding: 24px 0 0;
+}
+.modal {
+  border-radius: 10px;
+  color: var(--ink);
+}
+.toast {
+  border-radius: 6px;
+  font-size: 14px;
+}
+@media (max-width: 960px) {
+  .topbar {
+    padding: 0 24px;
+    gap: 18px;
+  }
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .primary-grid,
+  .secondary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .topbar {
+    height: auto;
+    min-height: 76px;
+    padding: 14px 18px 10px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .topbar nav {
+    order: 4;
+    width: 100%;
+    height: auto;
+    gap: 4px;
+  }
+  .topbar nav a {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 6px;
+    font-size: 13px;
+  }
+  .brand {
+    width: 100px;
+  }
+  main {
+    padding: 25px 16px 20px;
+  }
+  h1 {
+    font-size: 25px;
+  }
+  h1 span {
+    font-size: 17px;
+  }
+  .page-heading {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .metrics {
+    gap: 12px;
+  }
+  .metric-card {
+    padding: 18px 14px;
+  }
+  .metric-value {
+    font-size: 28px;
+  }
+  .metric-label {
+    font-size: 14px;
+  }
+  .panel-heading {
+    padding: 0 20px;
+  }
+  .control-body,
+  .form-grid {
+    padding: 20px;
+  }
+  .control-body {
+    padding-bottom: 0;
+  }
+  .parameter-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 0;
+  }
+  .parameter-summary > div:nth-child(2) {
+    border-right: 0;
+  }
+  .consumption-body {
+    padding: 20px;
+  }
+}
