@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { initial, step } from "../../simulation";
 import type { Mode, Parameters, Snapshot } from "../../simulation";
-import type { Language } from "../../i18n";
+import type { Language } from "../../translate";
 
 export function useDevice(
   params: Parameters,

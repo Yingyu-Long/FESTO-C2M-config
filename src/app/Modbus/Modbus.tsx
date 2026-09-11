@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Panel from "../components/Panel";
-import { translations, type Language } from "../../i18n";
+import { translations, type Language } from "../../translate";
 
 type ModbusProps = {
   notify: (message: string) => void;

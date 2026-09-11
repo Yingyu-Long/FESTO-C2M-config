@@ -4,7 +4,7 @@ import type { Parameters } from "../../simulation";
 import { fields } from "./fields";
 import Icon from "../components/Icon";
 import Panel from "../components/Panel";
-import { translations, type Language } from "../../i18n";
+import { translations, type Language } from "../../translate";
 
 type ConfigProps = {
   params: Parameters;

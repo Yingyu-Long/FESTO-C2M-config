@@ -4,7 +4,7 @@ import type { DeviceController } from "./useDevice";
 import { fields } from "../config/fields";
 import Icon from "../components/Icon";
 import Panel from "../components/Panel";
-import { translations, type Language } from "../../i18n";
+import { translations, type Language } from "../../translate";
 
 type DashboardProps = {
   params: Parameters;

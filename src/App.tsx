@@ -14,7 +14,7 @@ import Config from "./app/config/Config";
 import Modbus from "./app/Modbus/Modbus";
 import Icon from "./app/components/Icon";
 import logo from "./assets/festo-logo.png";
-import { translations, type Language } from "./i18n";
+import { translations, type Language } from "./translate";
 import "./App.css";
 
 const LANGUAGE_STORAGE_KEY = "festo-c2m-language";
