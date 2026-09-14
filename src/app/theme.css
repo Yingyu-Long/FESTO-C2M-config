@@ -88,12 +88,12 @@ h1 span {
   font-size: 12px;
   padding: 5px 9px;
 }
-.badge.demo {
+.badge.connection-status {
   border: 0;
   background: #e9f4fb;
   color: #0076bd;
 }
-.badge.demo i {
+.badge.connection-status i {
   background: #0076bd;
 }
 .metrics,
@@ -300,11 +300,6 @@ h1 span {
 .connection-grid > .panel {
   border-left: 3px solid var(--blue);
 }
-.demo-controls {
-  margin-top: 4px;
-  color: #61788a;
-  font-size: 12px;
-}
 footer {
   color: #758492;
   font-size: 12px;
@@ -402,4 +397,27 @@ footer {
   .consumption-body {
     padding: 20px;
   }
+}
+.device-notice {
+  margin: 0 0 18px;
+  padding: 12px 16px;
+  background: #edf6fc;
+  border: 1px solid #d5e6f2;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #2b6488;
+  overflow-wrap: anywhere;
+}
+.panel > .device-notice {
+  margin: 18px 24px 0;
+}
+.source-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0;
+}
+[hidden] {
+  display: none !important;
 }

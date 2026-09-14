@@ -10,12 +10,11 @@ export const translations = {
     },
     app: {
       module: "Energy-saving module",
-      demo: "Demo",
-      demoData: "Demo data · Device not connected",
       language: "Language",
     },
     dashboard: {
       phase: {
+        UNKNOWN: "Unknown state",
         NORMAL: "Normal supply",
         WAIT: "Low-flow timer",
         HOLD: "Waiting for auto standby",
@@ -52,7 +51,6 @@ export const translations = {
       flowTrend: "Current flow (l/min)",
       pressureTrend: "Output pressure (bar)",
       trendAria: "last 60 samples trend",
-      updatesPaused: "Updates paused",
       threshold: "Dashed line: threshold",
       automaticParameters: "Automatic control parameters",
       editParameters: "Edit parameters",
@@ -60,11 +58,6 @@ export const translations = {
       consumptionCost: "Accumulated air cost",
       estimatedAt: "Estimated at",
       resetConsumption: "Reset consumption",
-      demoControls: "Demo controls",
-      deviceRunning: "Device running",
-      deviceStopped: "Device stopped",
-      pauseDemo: "Pause demo",
-      resumeDemo: "Resume demo",
       resetTitle: "Reset accumulated consumption?",
       resetMessage: "Current accumulated consumption is",
       resetMessageEnd: ". Consumption and cost will be reset to zero.",
@@ -75,7 +68,7 @@ export const translations = {
     config: {
       title: "Module parameters",
       range: "Range",
-      unsaved: "Not saved",
+      unsaved: "Changes not applied",
       undo: "Undo changes",
       apply: "Apply parameters",
       required:
@@ -87,20 +80,10 @@ export const translations = {
     modbus: {
       title: "Device connection",
       disconnected: "Not connected",
-      savedToast: "Configuration saved temporarily; device not connected",
       host: "Device IP / hostname",
       port: "Port",
       unit: "Device ID",
       poll: "Update interval (ms)",
-      saved: "Configuration saved temporarily",
-      demoStatus: "Demo mode, device not connected",
-      save: "Save configuration",
-    },
-    device: {
-      modeChanged: "Switched to {mode} mode",
-      timerReset: "Timer reset; restoring supply",
-      automatic: "automatic",
-      manual: "manual",
     },
   },
   zh: {
@@ -112,12 +95,11 @@ export const translations = {
     },
     app: {
       module: "节能模块",
-      demo: "模拟演示",
-      demoData: "演示数据 · 未连接设备",
       language: "语言",
     },
     dashboard: {
       phase: {
+        UNKNOWN: "未知状态",
         NORMAL: "正常供气",
         WAIT: "低流量计时",
         HOLD: "等待开启自动待机",
@@ -154,7 +136,6 @@ export const translations = {
       flowTrend: "当前流量 (l/min)",
       pressureTrend: "输出压力 (bar)",
       trendAria: "最近60个采样点趋势",
-      updatesPaused: "更新已暂停",
       threshold: "虚线：阈值",
       automaticParameters: "自动控制参数",
       editParameters: "编辑参数",
@@ -162,11 +143,6 @@ export const translations = {
       consumptionCost: "累计用气成本",
       estimatedAt: "按",
       resetConsumption: "重置耗气量",
-      demoControls: "演示控制",
-      deviceRunning: "设备运行",
-      deviceStopped: "设备停机",
-      pauseDemo: "暂停演示",
-      resumeDemo: "继续演示",
       resetTitle: "重置累计耗气量？",
       resetMessage: "当前累计耗气量为",
       resetMessageEnd: "。重置后耗气量与成本归零。",
@@ -177,7 +153,7 @@ export const translations = {
     config: {
       title: "模块参数",
       range: "范围",
-      unsaved: "尚未保存",
+      unsaved: "修改尚未应用",
       undo: "撤销修改",
       apply: "应用参数",
       required: "请检查参数范围，所有参数均为必填。",
@@ -187,20 +163,10 @@ export const translations = {
     modbus: {
       title: "设备连接",
       disconnected: "未连接",
-      savedToast: "配置已暂存，设备未连接",
       host: "设备 IP / 主机名",
       port: "端口",
       unit: "设备编号",
       poll: "更新间隔 (ms)",
-      saved: "配置已暂存",
-      demoStatus: "演示模式，设备未连接",
-      save: "保存配置",
-    },
-    device: {
-      modeChanged: "已切换至{mode}模式",
-      timerReset: "计时已重置，正在恢复供气",
-      automatic: "自动",
-      manual: "手动",
     },
   },
 } as const;

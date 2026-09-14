@@ -1,39 +1,50 @@
-# FESTO MSE6-C2M Configuration
+# FESTO MSE6-C2M / FB36
 
-React + TypeScript + Vite 前端，沿用 FESTO-Connector 的白色导航、Festo 蓝与浅灰面板风格。
+A React and TypeScript application with a Node.js Modbus TCP backend for the Festo MSE6-C2M energy-saving module and CPX-FB36 bus node.
 
-## 开发
+Monitor flow, outlet pressure, air consumption and estimated cost. Control automatic/manual mode, the shutoff valve and consumption reset, and configure pressure and standby parameters. The interface supports English and Chinese and saves connection settings and parameter drafts in the browser.
+
+## Development
+
+Requires Node.js 24 and npm. In the project directory:
 
 ```sh
-npm install
+npm ci
 npm run dev
-npm run build
-npm run lint
 ```
 
-## 功能
+Open **http://127.0.0.1:5173**. This starts both the frontend and backend. To run them separately, use `npm run server:dev` and `npm run dev:ui` in separate terminals. Stop an existing instance before starting another.
 
-- 模拟实时流量、输出压力 p2、累计耗气量 V0、成本及压力变化趋势。
-- Auto / User 模式、手动供气及切断、自动使能、低流量计时复位与恢复供气。
-- 自动阈值、延迟（分钟）、正常／待机／手动压力及前端成本参数校验。
-- 耗气量重置确认和 Modbus TCP 连接配置表单。
-- 运行／停机场景、模拟暂停，响应式页面及键盘可用的重置弹窗。
+## Device configuration
 
-所有读数、控制和连接配置均仅在当前页面内存中运行，刷新后恢复演示初始值，不发送实机指令。初始参数是演示值，不代表设备出厂值。
+The backend computer must reach the FB36 over Modbus TCP. The backend automatically loads `server/fb36.config.local.json`. For a new installation:
 
-## 实机接入边界
+```sh
+cp -n server/fb36.config.example.json server/fb36.config.local.json
+```
 
-`src/simulation.ts` 包含独立模拟状态模型；`src/App.tsx` 负责页面交互。后续需通过后端 Modbus TCP 服务替换模拟数据更新及控制命令。
+The example maps module 0 (C2M) and module 1 (FB36):
 
-操作数依据用户提供的《MSE6-C2M 操作说明 2024-12d》：
+| Setting | Address |
+| --- | --- |
+| `inputBase` | 45392 |
+| `outputBase` | 40001 |
+| `outputEchoBase` | 45399 |
+| `diagnosticInput` | 45403 |
+| `diagnosticOutput` | 40004 |
 
-- Am.0.0 / Em.3.0：0 = 供气，1 = 切断。
-- Am.0.1：0 = USER，1 = AUTO。
-- Am.0.2：Q_low-Timer Reset；Am.0.5：自动使能。
-- Am.0.3–0.4 = 3 时，由 Am.2 设置手动压力。
-- Pm.17–18：自动延迟，单位分钟；Pm.19–20：低流量阈值。
-- Pm.21–22 / Pm.23–24：正常／待机压力，正常压力必须更高。
-- Am.0.12：V0 测量使能；Am.0.13：V0 复位。演示累计量不模拟设备整数溢出。
-- 自动切断后，压力达到待机值时截止阀重新打开维持待机压力；需复位计时器恢复正常压力。
+These are direct PDU addresses; do not subtract 40001 or 1. Confirm the layout against the device's built-in **Modbus/TCP** page and match the configured units. Set `mappingConfirmed: true` to enable reads and `writesEnabled: true` to enable controls. The existing local configuration already contains the confirmed mapping. Restart the backend after editing configuration.
 
-Am / Em / Pm 不是已确认的 Modbus 地址。实机接入前须按总线节点确认地址、字节序、单位和比例。压力以 bar 显示（例如使用 mbar 原始值时需换算）。实机压力变化来自可选输入 Em.5 / Em.6，应按配置的测量时间解释；页面当前显示每秒模拟差值，切断时的压降提示不是实机泄漏诊断。模拟固定压力变化速率并非设备气动动态模型。
+Enter the device IP, port (normally 502) and Unit ID on the **Device connection** page. Read device parameters before applying changes, and use manual mode when editing them. Connecting does not automatically operate the valve or change parameters.
+
+## Deployment
+
+```sh
+npm ci
+npm run build
+npm start
+```
+
+Open **http://127.0.0.1:3001**. Node.js serves the built frontend and API; keep it running on a computer with device-network access.
+
+`FB36_CONFIG` overrides the local configuration path. The server listens on localhost; remote access requires an authenticated reverse proxy and `UI_ORIGIN` set to its browser-facing origin.

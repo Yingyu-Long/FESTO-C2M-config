@@ -1,0 +1,16 @@
+{
+  "mappingConfirmed": false,
+  "writesEnabled": false,
+  "inputBase": 45392,
+  "outputBase": 40001,
+  "outputEchoBase": 45399,
+  "diagnosticInput": 45403,
+  "diagnosticOutput": 40004,
+  "moduleNumber": 0,
+  "swapProcessBytes": false,
+  "pressureUnit": "mbar",
+  "flowUnit": "l/min",
+  "consumptionUnit": "l",
+  "timeout": 2000,
+  "pulseMs": 150
+}

@@ -1,4 +1,4 @@
-import type { Parameters } from "../../simulation";
+import type { Parameters } from "../types";
 
 export const fields: {
   key: keyof Parameters;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Parameters } from "../../simulation";
+import type { Parameters, Snapshot } from "../types";
 import type { DeviceController } from "./useDevice";
 import { fields } from "../config/fields";
 import Icon from "../components/Icon";
@@ -27,16 +27,14 @@ export default function Dashboard({
     setEnabled,
     manualOpen,
     setManualOpen,
-    running,
-    setRunning,
-    idle,
-    setIdle,
     samples,
-    updateCurrent,
+    resetConsumption,
     changeMode,
     resetTimer,
   } = device;
-  const current = samples[samples.length - 1];
+  const current: Snapshot = samples[samples.length - 1] ?? {
+    flow: 0, pressure: 0, consumption: 0, delta: 0, tick: 0, phase: "UNKNOWN",
+  };
   const copy = translations[language].dashboard;
   const phaseNames = copy.phase;
   const [metric, setMetric] = useState<"flow" | "pressure">("flow");
@@ -46,8 +44,9 @@ export default function Dashboard({
   useEffect(() => {
     if (resetOpen) cancelRef.current?.focus();
   }, [resetOpen]);
-  const valveOpen = mode === "user" ? manualOpen : current.phase !== "SHUTOFF";
-  const leakEligible = !valveOpen && mode === "user";
+  const valveOpen = device.valveOpen;
+  const leakEligible =
+    device.dataReady && device.deltaReady && !valveOpen && mode === "user";
   const leak = leakEligible && -current.delta > params.leakLimit;
   const maxY =
     metric === "flow"
@@ -70,14 +69,20 @@ export default function Dashboard({
               value: current.flow.toFixed(1),
               unit: "l/min",
               icon: "flow",
-              detail: `${copy.lowFlowThreshold} ${params.threshold} l/min`,
+              detail:
+                !device.backend?.parameters
+                  ? "—"
+                  : `${copy.lowFlowThreshold} ${params.threshold} l/min`,
             },
             {
               label: copy.outputPressure,
               value: current.pressure.toFixed(2),
               unit: "bar",
               icon: "pressure",
-              detail: `${copy.targetPressure} ${mode === "user" ? params.userPressure : ["SHUTOFF", "STANDBY"].includes(current.phase) ? params.standby : params.normal} bar`,
+              detail:
+                !device.backend?.parameters
+                  ? "—"
+                  : `${copy.targetPressure} ${mode === "user" ? params.userPressure : ["SHUTOFF", "STANDBY"].includes(current.phase) ? params.standby : params.normal} bar`,
             },
             {
               label: copy.totalConsumption,
@@ -104,11 +109,13 @@ export default function Dashboard({
                 <Icon name={m.icon} />
               </div>
               <div className="metric-value">
-                {m.value}
+                {device.dataReady && (m.icon !== "trend" || device.deltaReady)
+                  ? m.value
+                  : "—"}
                 <span>{m.unit}</span>
               </div>
               <div className="metric-bottom">
-                <span>{m.detail}</span>
+                <span>{device.dataReady ? m.detail : "—"}</span>
               </div>
             </section>
           ))}
@@ -126,6 +133,7 @@ export default function Dashboard({
               >
                 <button
                   className={mode === "auto" ? "selected" : ""}
+                  disabled={!device.canControl}
                   onClick={() => changeMode("auto")}
                 >
                   <Icon name="settings" />
@@ -133,6 +141,7 @@ export default function Dashboard({
                 </button>
                 <button
                   className={mode === "user" ? "selected" : ""}
+                  disabled={!device.canControl}
                   onClick={() => changeMode("user")}
                 >
                   <Icon name="plug" />
@@ -150,6 +159,7 @@ export default function Dashboard({
                       role="switch"
                       aria-checked={enabled}
                       aria-label={copy.autoStandby}
+                      disabled={!device.canControl}
                       onClick={() => setEnabled(!enabled)}
                     >
                       <span />
@@ -159,21 +169,23 @@ export default function Dashboard({
                     <div className="label-row">
                       <span>{copy.lowFlowTimer}</span>
                       <strong>
-                        {Math.floor(current.elapsed / 60)}:
-                        {String(current.elapsed % 60).padStart(2, "0")}{" "}
-                        <span>/ {params.delay} min</span>
+                        {!device.dataReady ? "—" :
+                          device.backend?.telemetry?.timerState === 2
+                            ? language === "zh" ? "已超时" : "Elapsed"
+                            : device.backend?.telemetry?.timerState === 1
+                              ? language === "zh" ? "计时中" : "Running"
+                              : language === "zh" ? "未计时" : "Idle"}
                       </strong>
                     </div>
-                    <div className="progress">
-                      <div
-                        style={{
-                          width: `${Math.min(100, (current.elapsed / Math.max(1, params.delay * 60)) * 100)}%`,
-                        }}
-                      />
-                    </div>
                     <div className="timer-foot">
-                      <span>{phaseNames[current.phase]}</span>
-                      <button className="text-button" onClick={resetTimer}>
+                      <span>
+                        {device.dataReady ? phaseNames[current.phase] : "—"}
+                      </span>
+                      <button
+                        className="text-button"
+                        disabled={!device.canControl}
+                        onClick={resetTimer}
+                      >
                         <Icon name="reset" size={14} />
                         {copy.restoreAndRet}
                       </button>
@@ -189,12 +201,14 @@ export default function Dashboard({
                     <div className="segmented">
                       <button
                         className={manualOpen ? "selected" : ""}
+                        disabled={!device.canControl}
                         onClick={() => setManualOpen(true)}
                       >
                         {copy.open}
                       </button>
                       <button
                         className={!manualOpen ? "selected" : ""}
+                        disabled={!device.canControl}
                         onClick={() => setManualOpen(false)}
                       >
                         {copy.closed}
@@ -204,7 +218,11 @@ export default function Dashboard({
                   <div className="manual-pressure">
                     <span>
                       {copy.manualTargetPressure}{" "}
-                      <strong>{params.userPressure.toFixed(1)} bar</strong>
+                      <strong>
+                        {device.backend?.parameters
+                          ? `${params.userPressure.toFixed(1)} bar`
+                          : "—"}
+                      </strong>
                     </span>
                     <button
                       className="text-button"
@@ -218,7 +236,12 @@ export default function Dashboard({
               <div className="control-status">
                 <span className={`dot ${valveOpen ? "" : "muted"}`} />
                 <strong>
-                  {copy.shutoffValve} {valveOpen ? copy.open : copy.closed}
+                  {copy.shutoffValve}{" "}
+                  {device.dataReady
+                    ? valveOpen
+                      ? copy.open
+                      : copy.closed
+                    : "—"}
                 </strong>
               </div>
             </div>
@@ -249,7 +272,11 @@ export default function Dashboard({
               </span>
               <span>{copy.recentSeconds}</span>
             </div>
-            <div className="chart">
+            <div
+              className="chart"
+              style={{ visibility: device.dataReady ? "visible" : "hidden" }}
+              aria-hidden={!device.dataReady}
+            >
               <svg
                 viewBox="0 0 770 194"
                 role="img"
@@ -275,16 +302,17 @@ export default function Dashboard({
                     </text>
                   </g>
                 ))}
-                {metric === "flow" && (
-                  <line
-                    x1="44"
-                    x2="744"
-                    y1={164 - (params.threshold / maxY) * 140}
-                    y2={164 - (params.threshold / maxY) * 140}
-                    stroke="#e2ad55"
-                    strokeDasharray="5 5"
-                  />
-                )}
+                {metric === "flow" &&
+                  device.backend?.parameters && (
+                    <line
+                      x1="44"
+                      x2="744"
+                      y1={164 - (params.threshold / maxY) * 140}
+                      y2={164 - (params.threshold / maxY) * 140}
+                      stroke="#e2ad55"
+                      strokeDasharray="5 5"
+                    />
+                  )}
                 <polygon
                   points={`44,164 ${chartPoints} ${44 + ((samples.length - 1) / 59) * 700},164`}
                   fill="url(#chart-fill)"
@@ -308,9 +336,9 @@ export default function Dashboard({
               </svg>
             </div>
             <div className="chart-footer">
-              <span>{running ? "" : copy.updatesPaused}</span>
               <span>
-                {metric === "flow"
+                {metric === "flow" &&
+                device.backend?.parameters
                   ? `${copy.threshold} ${params.threshold} l/min`
                   : ""}
               </span>
@@ -332,7 +360,10 @@ export default function Dashboard({
                 <div key={f.key}>
                   <span>{language === "en" ? f.titleEn : f.title}</span>
                   <strong>
-                    {params[f.key]} <small>{f.unit}</small>
+                    {device.backend?.parameters
+                      ? params[f.key]
+                      : "—"}{" "}
+                    <small>{f.unit}</small>
                   </strong>
                 </div>
               ))}
@@ -343,7 +374,9 @@ export default function Dashboard({
               <div>
                 <span>{copy.consumptionCost}</span>
                 <strong>
-                  ¥ {(current.consumption * params.price).toFixed(2)}
+                  {device.dataReady
+                    ? `¥ ${(current.consumption * params.price).toFixed(2)}`
+                    : "—"}
                 </strong>
                 <small>
                   {copy.estimatedAt} ¥ {params.price.toFixed(2)} / m³
@@ -352,6 +385,7 @@ export default function Dashboard({
               <button
                 ref={resetTrigger}
                 className="button"
+                disabled={!device.canControl}
                 onClick={() => setResetOpen(true)}
               >
                 <Icon name="reset" size={16} />
@@ -360,31 +394,6 @@ export default function Dashboard({
             </div>
           </Panel>
         </div>
-        <details className="demo-controls">
-          <summary>{copy.demoControls}</summary>
-          <div className="demo-controls-body">
-            <div className="segmented">
-              <button
-                className={!idle ? "selected" : ""}
-                onClick={() => setIdle(false)}
-              >
-                {copy.deviceRunning}
-              </button>
-              <button
-                className={idle ? "selected" : ""}
-                onClick={() => setIdle(true)}
-              >
-                {copy.deviceStopped}
-              </button>
-            </div>
-            <button
-              className="text-button"
-              onClick={() => setRunning(!running)}
-            >
-              {running ? copy.pauseDemo : copy.resumeDemo}
-            </button>
-          </div>
-        </details>
       </>
       {resetOpen && (
         <div className="modal-backdrop" onClick={closeReset}>
@@ -421,10 +430,17 @@ export default function Dashboard({
               </button>
               <button
                 className="button primary"
-                onClick={() => {
-                  updateCurrent({ consumption: 0 });
-                  closeReset();
-                  notify(copy.resetDone);
+                disabled={!device.canControl}
+                onClick={async () => {
+                  try {
+                    await resetConsumption();
+                    closeReset();
+                    notify(copy.resetDone);
+                  } catch (error) {
+                    notify(
+                      error instanceof Error ? error.message : String(error),
+                    );
+                  }
                 }}
               >
                 {copy.confirmReset}

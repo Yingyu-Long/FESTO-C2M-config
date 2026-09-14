@@ -6,10 +6,9 @@ import {
   Routes,
   useNavigate,
 } from "react-router-dom";
-import { defaults } from "./simulation";
-import type { Parameters } from "./simulation";
 import Dashboard from "./app/dashboard/Dashboard";
 import { useDevice } from "./app/dashboard/useDevice";
+import { connectionLabel, connectionNotice } from "./app/connectionStatus";
 import Config from "./app/config/Config";
 import Modbus from "./app/Modbus/Modbus";
 import Icon from "./app/components/Icon";
@@ -22,16 +21,16 @@ const LANGUAGE_STORAGE_KEY = "festo-c2m-language";
 
 export default function App() {
   const [language, setLanguage] = useState<Language>(() => {
-    const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    return storedLanguage === "zh" ? "zh" : "en";
+    try {
+      return localStorage.getItem(LANGUAGE_STORAGE_KEY) === "zh" ? "zh" : "en";
+    } catch { return "en"; }
   });
-  const [params, setParams] = useState<Parameters>(defaults);
   const [toast, setToast] = useState("");
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
   useEffect(() => {
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    try { localStorage.setItem(LANGUAGE_STORAGE_KEY, language); } catch { /* Browser storage can be disabled. */ }
   }, [language]);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
   function notify(message: string) {
@@ -41,8 +40,10 @@ export default function App() {
   }
 
   const copy = translations[language];
-  const device = useDevice(params, notify, language);
+  const device = useDevice(notify, language);
+  const params = device.params;
   const navigate = useNavigate();
+  const statusLabel = connectionLabel(device.backend, language === "zh");
   return (
     <div className="app">
       <header className="topbar">
@@ -90,13 +91,19 @@ export default function App() {
             </h1>
           </div>
           <div className="heading-actions">
-            <span className="badge demo">
+            <span className="badge connection-status">
               <i />
-              {copy.app.demo}
+              {statusLabel}
             </span>
           </div>
         </div>
 
+        {(!device.dataReady || device.apiError || device.backend?.warnings.length) && (
+          <div className="device-notice" role="status">
+            {device.apiError ||
+              connectionNotice(device.backend, device.dataReady, language === "zh")}
+          </div>
+        )}
         <Routes>
           <Route
             path="/overview"
@@ -114,8 +121,10 @@ export default function App() {
             path="/parameters"
             element={
               <Config
+                key={device.settingsScope}
                 params={params}
-                onApply={setParams}
+                onApply={device.applyParameters}
+                device={device}
                 notify={notify}
                 language={language}
               />
@@ -123,13 +132,15 @@ export default function App() {
           />
           <Route
             path="/connection"
-            element={<Modbus notify={notify} language={language} />}
+            element={
+              <Modbus notify={notify} language={language} device={device} />
+            }
           />
           <Route path="*" element={<Navigate to="/overview" replace />} />
         </Routes>
         <footer>
           <span>FESTO · MSE6-C2M</span>
-          <span>{copy.app.demoData}</span>
+          <span>Modbus TCP · FB36</span>
         </footer>
       </main>
       {toast && (
